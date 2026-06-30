@@ -1,0 +1,30 @@
+# Rust
+hades/target/
+hades/.hades/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.worker-heartbeat
+
+# Python - checkpoints
+.checkpoints/
+
+# Obsidian
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+
+# Node
+node_modules/
+package-lock.json
+
+# Secrets
+.workbench-secrets.env
+
+# OS
+.DS_Store

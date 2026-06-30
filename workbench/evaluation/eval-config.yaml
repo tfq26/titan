@@ -1,0 +1,54 @@
+# LangSmith Evaluation Configuration
+# Datasets and evaluation specs for the workbench.
+
+project_name: workbench
+tags: [workbench, cross-project, multi-agent]
+
+datasets:
+  - name: task-classification
+    path: datasets/task-classification.yaml
+    description: "Golden labels for task_type classification accuracy"
+
+  - name: review-decision
+    path: datasets/review-decision.yaml
+    description: "Known outcomes vs reviewer decisions for quality measurement"
+
+  - name: revision-escalation
+    path: datasets/revision-escalation.yaml
+    description: "Tasks that should/shouldn't have escalated"
+
+evaluation:
+  online:
+    - name: classification-accuracy
+      dataset: task-classification
+      trigger: after classify_request node
+      metric: accuracy
+
+    - name: review-decision-quality
+      dataset: review-decision
+      trigger: after final_decision node
+      metric: precision_recall_f1
+
+  offline:
+    - name: false-pass-detection
+      dataset: review-decision
+      description: "Re-review a sample of 'complete' tasks to catch false passes"
+      schedule: weekly
+
+    - name: escalation-correctness
+      dataset: revision-escalation
+      description: "Check if escalation decisions were correct"
+      schedule: weekly
+
+metrics:
+  - name: cost_per_completed_task
+    source: trace
+    aggregation: sum token costs across all nodes for a task
+
+  - name: latency_per_stage
+    source: trace
+    aggregation: per-node timing
+
+  - name: reopen_rate
+    source: vault
+    aggregation: tasks that went complete -> open again within 30 days

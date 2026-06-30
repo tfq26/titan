@@ -1,0 +1,44 @@
+project_id: virgo
+
+model_policy:
+  allowed_roles:
+    worker:
+      - worker_model
+    primary_reviewer:
+      - primary_reviewer_model
+    secondary_reviewer:
+      - secondary_reviewer_model
+    classifier:
+      - classifier_model
+    bookkeeping_reviewer:
+      - bookkeeping_reviewer_model
+  denied_model_refs: []
+  role_requirements:
+    secondary_reviewer:
+      escalation_tier: high
+    bookkeeping_reviewer:
+      task_type:
+        - docs
+        - bookkeeping
+
+subsystems:
+  - server
+  - frontend
+  - build
+
+validation:
+  build: "npm run build 2>&1"
+  test: "cd server && npx tsc --noEmit 2>&1"
+
+github:
+  repo: tfq26/Virgo
+  base_branch: main
+  sync_issues: true
+  label_prefix: ""
+
+vault:
+  queue_tasks: queue-tasks
+  features: features
+  systems: systems
+  memory: memory
+  reports: ../reports/subagents

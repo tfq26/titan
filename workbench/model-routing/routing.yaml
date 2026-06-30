@@ -1,0 +1,68 @@
+models:
+  worker_model:
+    provider: google
+    api_key_env: GOOGLE_API_KEY
+    model_id: gemini-3-flash-preview
+    nickname: Johnny
+    temperature: 0.2
+    max_tokens: 8192
+    description: Cheap coding-capable model for monotonous implementation work
+  primary_reviewer_model:
+    provider: google
+    api_key_env: GOOGLE_API_KEY
+    model_id: gemini-3.1-pro-preview
+    nickname: Bobby
+    temperature: 0.1
+    max_tokens: 8192
+    description: 'Lower-cost default judgment: scope, flaws, evidence, final decision'
+  classifier_model:
+    provider: google
+    api_key_env: GOOGLE_API_KEY
+    model_id: gemini-2.5-flash-lite
+    nickname: Nick
+    temperature: 0.0
+    max_tokens: 1024
+    description: 'Ultra-cheap intake triage: task type and risk classification'
+  secondary_reviewer_model:
+    provider: google
+    api_key_env: GOOGLE_API_KEY
+    model_id: gemini-3.1-flash-lite
+    nickname: Trent
+    temperature: 0.1
+    max_tokens: 16384
+    description: 'Escalation-only: deep review for high-risk tasks and revision-fallback replanning'
+  bookkeeping_reviewer_model:
+    provider: google
+    api_key_env: GOOGLE_API_KEY
+    model_id: gemini-3-flash-preview
+    nickname: Matthew
+    temperature: 0.0
+    max_tokens: 4096
+    description: Optional ultra-cheap reviewer for docs and bookkeeping
+roles:
+  worker:
+    model_ref: worker_model
+    description: Executes queued implementation tasks
+  primary_reviewer:
+    model_ref: primary_reviewer_model
+    description: First-pass review, routine supervision, final queue-state decisions
+  classifier:
+    model_ref: classifier_model
+    description: 'Intake triage: task type, risk level, escalation tier'
+  secondary_reviewer:
+    model_ref: secondary_reviewer_model
+    description: Escalation-only deep review and revision-fallback replanning
+  bookkeeping_reviewer:
+    model_ref: bookkeeping_reviewer_model
+    description: Optional ultra-cheap reviewer for docs and bookkeeping
+cost_limits:
+  worker:
+    max_cost_per_task_usd: 0.1
+  primary_reviewer:
+    max_cost_per_task_usd: 0.5
+  secondary_reviewer:
+    max_cost_per_task_usd: 2.0
+  classifier:
+    max_cost_per_task_usd: 0.02
+  bookkeeping_reviewer:
+    max_cost_per_task_usd: 0.05

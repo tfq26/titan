@@ -1,0 +1,46 @@
+# Task Classification Dataset
+# Golden labels for task_type classification evaluation.
+
+version: 1
+created: 2026-06-16
+
+examples:
+  - input: "Add a dark mode toggle to the settings panel"
+    expected_task_type: implementation
+    expected_risk_level: low
+    expected_escalation_tier: low
+
+  - input: "Write documentation for the API endpoints"
+    expected_task_type: docs
+    expected_risk_level: low
+    expected_escalation_tier: low
+
+  - input: "Refactor the render pipeline to use a command buffer"
+    expected_task_type: refactor
+    expected_risk_level: high
+    expected_escalation_tier: high
+
+  - input: "Fix the memory leak in the networking layer"
+    expected_task_type: implementation
+    expected_risk_level: high
+    expected_escalation_tier: high
+
+  - input: "Clean up unused imports across the codebase"
+    expected_task_type: refactor
+    expected_risk_level: low
+    expected_escalation_tier: low
+
+  - input: "Investigate why the pause menu freezes when loading a save"
+    expected_task_type: investigation
+    expected_risk_level: high
+    expected_escalation_tier: high
+
+  - input: "Add unit tests for the asset pipeline"
+    expected_task_type: implementation
+    expected_risk_level: low
+    expected_escalation_tier: low
+
+  - input: "Rename all instances of getCwd to getCurrentWorkingDirectory"
+    expected_task_type: refactor
+    expected_risk_level: low
+    expected_escalation_tier: low

@@ -1,0 +1,119 @@
+# MCP-Compatible Tool Definitions
+# These tools are available to agents in the workbench.
+# Tools marked `approval_required: true` trigger a human-approval checkpoint.
+
+tools:
+  # ── Safe default tools (no approval required) ───────────────────────
+  - name: repo_search
+    description: Search the project repository for files or content
+    approval_required: false
+    category: read
+
+  - name: read_file
+    description: Read a file from the project repository
+    approval_required: false
+    category: read
+
+  - name: list_files
+    description: List files in a directory
+    approval_required: false
+    category: read
+
+  - name: git_diff
+    description: Show git diff for tracked changes
+    approval_required: false
+    category: read
+
+  - name: git_status
+    description: Show git working tree status
+    approval_required: false
+    category: read
+
+  - name: docs_lookup
+    description: Search project documentation
+    approval_required: false
+    category: read
+
+  - name: vault_read
+    description: Read a note from the project vault
+    approval_required: false
+    category: vault
+
+  - name: vault_search
+    description: Search the project vault for notes
+    approval_required: false
+    category: vault
+
+  - name: shared_vault_read
+    description: Read a note from the shared workbench vault
+    approval_required: false
+    category: vault
+
+  - name: shared_vault_search
+    description: Search the shared workbench vault
+    approval_required: false
+    category: vault
+
+  - name: pattern_lookup
+    description: Look up cross-project patterns in the shared vault patterns index
+    approval_required: false
+    category: vault
+
+  # ── Approval-gated tools ────────────────────────────────────────────
+  - name: apply_patch
+    description: Apply a code patch to the project
+    approval_required: true
+    category: write
+
+  - name: write_file
+    description: Write or overwrite a file
+    approval_required: false
+    category: write
+
+  - name: delete_file
+    description: Delete a file from the project
+    approval_required: true
+    category: destructive
+
+  - name: install_dependency
+    description: Install a new package or dependency
+    approval_required: true
+    category: destructive
+
+  - name: modify_env
+    description: Modify environment or configuration with secrets
+    approval_required: true
+    category: destructive
+
+  - name: database_migration
+    description: Run a database migration
+    approval_required: true
+    category: destructive
+
+  - name: git_push
+    description: Push commits to a remote
+    approval_required: true
+    category: destructive
+
+  - name: deploy
+    description: Deploy the project
+    approval_required: true
+    category: destructive
+
+  - name: queue_move_task
+    description: Move a task between queue state folders
+    approval_required: false
+    category: vault
+    note: "orchestrator handles this; worker should not move tasks except claimed→review-needed"
+
+  - name: vault_write
+    description: Write a note to the project vault
+    approval_required: false
+    category: vault
+
+  # ── Cross-project tools ─────────────────────────────────────────────
+  - name: cross_project_search
+    description: Search another project's vault (read-only)
+    approval_required: false
+    category: cross-project
+    note: "Results must be tagged as source: external"

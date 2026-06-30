@@ -1,0 +1,19 @@
+[Unit]
+Description=Workbench Autonomous Agent Worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=taufe
+WorkingDirectory=/home/taufe/tools/agentOrchestrator
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/home/taufe/.workbench-secrets.env
+ExecStart=/home/taufe/tools/agentOrchestrator/server/run-worker.sh --project ahamkara --interval 10
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

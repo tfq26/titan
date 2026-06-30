@@ -1,0 +1,30 @@
+# Revision Escalation Dataset
+# Scenarios where escalation should or should not occur.
+
+version: 1
+created: 2026-06-16
+
+examples:
+  - scenario: "Low-risk docs task revised once"
+    revision_count: 1
+    original_escalation_tier: low
+    expected_escalation_tier: low
+    should_escalate: false
+
+  - scenario: "Low-risk task revised twice"
+    revision_count: 2
+    original_escalation_tier: low
+    expected_escalation_tier: high
+    should_escalate: true
+
+  - scenario: "High-risk task revised three times"
+    revision_count: 3
+    original_escalation_tier: high
+    expected_escalation_tier: high
+    should_route_to_planner: true
+
+  - scenario: "High-risk task revised once"
+    revision_count: 1
+    original_escalation_tier: high
+    expected_escalation_tier: high
+    should_route_to_planner: false

@@ -1,0 +1,34 @@
+# Review Decision Dataset
+# Known task outcomes mapped to expected review decisions.
+
+version: 1
+created: 2026-06-16
+
+examples:
+  - scenario: "Task implemented correctly with passing tests and clear report"
+    expected_primary_decision: passes_first_pass
+    expected_final_decision: complete
+
+  - scenario: "Task implemented but validation was not run and report is missing"
+    expected_primary_decision: revise
+    expected_final_decision: revise
+
+  - scenario: "Task touches files outside scope without explanation"
+    expected_primary_decision: revise
+    expected_final_decision: revise
+
+  - scenario: "Task requires a dependency that hasn't been approved"
+    expected_primary_decision: blocked
+    expected_final_decision: blocked
+
+  - scenario: "Task changes threading model without adequate safety analysis"
+    expected_primary_decision: passes_first_pass
+    expected_secondary_decision: concern
+    expected_final_decision: revise
+    escalation_tier: high
+
+  - scenario: "High-risk lifecycle change with thorough testing and clear rationale"
+    expected_primary_decision: passes_first_pass
+    expected_secondary_decision: confirm
+    expected_final_decision: complete
+    escalation_tier: high

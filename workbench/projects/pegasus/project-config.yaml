@@ -1,0 +1,31 @@
+project_id: pegasus
+model_policy:
+  allowed_roles:
+    bookkeeping_reviewer:
+    - bookkeeping_reviewer_model
+    classifier:
+    - classifier_model
+    primary_reviewer:
+    - primary_reviewer_model
+    secondary_reviewer:
+    - secondary_reviewer_model
+    worker:
+    - worker_model
+  denied_model_refs: []
+  role_requirements:
+    bookkeeping_reviewer:
+      task_type:
+      - docs
+      - bookkeeping
+    secondary_reviewer:
+      escalation_tier: high
+subsystems: []
+validation:
+  build: echo 'Build command not yet configured for Pegasus'
+  test: echo 'Test command not yet configured for Pegasus'
+vault:
+  reports: ../reports/subagents
+  queue_tasks: queue-tasks
+  memory: memory
+  features: features
+  systems: systems

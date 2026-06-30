@@ -1,0 +1,71 @@
+# Ahamkara Project Configuration
+# Overrides and project-specific settings for the Ahamkara project.
+
+project_id: ahamkara
+
+# ── Model Authorization Policy ────────────────────────────────────────
+# Controls which models this project is allowed to use.
+# Credentials are machine-level (env vars). This is project-level auth.
+model_policy:
+  allowed_roles:
+    worker:
+      - worker_model
+    primary_reviewer:
+      - primary_reviewer_model
+    secondary_reviewer:
+      - secondary_reviewer_model
+    classifier:
+      - classifier_model
+    bookkeeping_reviewer:
+      - bookkeeping_reviewer_model
+
+  denied_model_refs: []
+
+  role_requirements:
+    secondary_reviewer:
+      escalation_tier: high
+
+    bookkeeping_reviewer:
+      task_type:
+        - docs
+        - bookkeeping
+
+# Override model routing for this project (optional)
+# model_routing:
+#   worker:
+#     model_id: gpt-4o-mini
+
+# Project-specific subsystems recognized by the classifier
+subsystems:
+  - rendering
+  - networking
+  - gameplay-world
+  - asset-pipeline
+  - build-and-test
+  - wish-engine
+
+# Validation commands that agents should run
+validation:
+  build: "cmake --build --preset debug-headless"
+  test: "./scripts/run-tests.sh --preset debug-headless"
+
+# GitHub integration (for server-side autonomous execution)
+github:
+  repo: taufeeqali/Ahamkara
+  base_branch: develop
+  sync_issues: true
+  label_prefix: ""
+  sync_from_issues: true
+  issue_task_label: task
+  issue_poll_interval: 60
+  pr_watch_interval: 120
+  auto_cleanup: true
+  auto_merge_low_risk: true
+
+# Vault paths (relative to vault_root)
+vault:
+  queue_tasks: queue-tasks
+  features: features
+  systems: systems
+  memory: memory
+  reports: ../reports/subagents  # relative to vault_root

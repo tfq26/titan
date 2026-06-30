@@ -1,0 +1,48 @@
+# Libra Project Configuration
+# Overrides and project-specific settings for the Libra project.
+
+project_id: libra
+
+# ── Model Authorization Policy ────────────────────────────────────────
+model_policy:
+  allowed_roles:
+    worker:
+      - worker_model
+    primary_reviewer:
+      - primary_reviewer_model
+    secondary_reviewer:
+      - secondary_reviewer_model
+    classifier:
+      - classifier_model
+    bookkeeping_reviewer:
+      - bookkeeping_reviewer_model
+
+  denied_model_refs: []
+
+  role_requirements:
+    secondary_reviewer:
+      escalation_tier: high
+
+    bookkeeping_reviewer:
+      task_type:
+        - docs
+        - bookkeeping
+
+# Project-specific subsystems recognized by the classifier
+subsystems: []
+
+# Validation commands that agents should run
+validation:
+  build: "echo 'Build command not yet configured for Libra'"
+  test: "echo 'Test command not yet configured for Libra'"
+
+# Vault paths (relative to vault_root)
+vault:
+  queue_tasks: queue-tasks
+  features: features
+  systems: systems
+  memory: memory
+  reports: ../reports/subagents
+
+# Note: The vault directory structure does not exist yet.
+# Bootstrap with: mkdir -p docs/vault/queue-tasks/{open,claimed,review-needed,completed,blocked}

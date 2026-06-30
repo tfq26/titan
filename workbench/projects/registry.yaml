@@ -1,0 +1,49 @@
+# Project Registry
+# Maps project_id to repo path, vault root, and overrides.
+# This is the single source of truth for which projects the workbench manages.
+
+projects:
+  - id: ahamkara
+    name: Ahamkara
+    repo_root: /Users/taufeeqali/Projects/Ahamkara
+    vault_root: /Users/taufeeqali/Projects/Ahamkara/docs/vault
+    report_root: /Users/taufeeqali/Projects/Ahamkara/docs/reports/subagents
+    standing_instructions: /Users/taufeeqali/Projects/Ahamkara/docs/vault/queue-tasks/opencode-standing-instructions.md
+    status: active
+    created: 2026-06-16
+
+  - id: libra
+    name: Libra
+    repo_root: /Users/taufeeqali/Projects/Libra
+    vault_root: /Users/taufeeqali/Projects/Libra/docs/vault
+    report_root: /Users/taufeeqali/Projects/Libra/docs/reports/subagents
+    status: registered
+    created: 2026-06-16
+    note: "Vault not yet created. Run 'mkdir -p docs/vault/queue-tasks/{open,claimed,review-needed,completed,blocked}' in the Libra repo to bootstrap."
+  - id: pegasus
+    name: Pegasus
+    repo_root: /Users/taufeeqali/Projects/Pegasus/Pegasus
+    vault_root: /Users/taufeeqali/Projects/Pegasus/Pegasus/docs/vault
+    report_root: /Users/taufeeqali/Projects/Pegasus/Pegasus/docs/reports/subagents
+    status: registered
+    created: 2026-06-18
+    note: null
+
+  - id: virgo
+    name: Virgo
+    repo_root: /Users/taufeeqali/Projects/Virgo
+    vault_root: /Users/taufeeqali/Projects/Virgo/docs/vault
+    report_root: /Users/taufeeqali/Projects/Virgo/docs/reports/subagents
+    status: active
+    created: 2026-06-29
+    note: "Test project for worktree executor and GitHub sync"
+
+  - id: blitz
+    name: Blitz
+    repo_root: /Users/taufeeqali/Projects/blitz
+    vault_root: /Users/taufeeqali/Projects/blitz/docs/vault
+    report_root: /Users/taufeeqali/Projects/blitz/docs/reports/subagents
+    standing_instructions: /Users/taufeeqali/Projects/blitz/docs/vault/queue-tasks/opencode-standing-instructions.md
+    status: active
+    created: 2026-06-19
+    note: "Replaced the previous Blitz app contents with a vault-backed project scaffold."
