@@ -180,6 +180,7 @@ class WorktreeExecutor:
         base_branch: str = "develop",
         llm_role: str = "worker",
         gh_token: Optional[str] = None,
+        hades_url: Optional[str] = None,
     ):
         self.repo_root = Path(repo_root).resolve()
         self.vault_root = Path(vault_root).resolve()
@@ -187,6 +188,7 @@ class WorktreeExecutor:
         self.base_branch = base_branch
         self.llm_role = llm_role
         self.gh_token = gh_token or os.environ.get("GITHUB_TOKEN", "")
+        self.hades_url = hades_url
 
         self._worktrees_dir = self.repo_root.parent / ".worktrees"
 
@@ -740,7 +742,7 @@ class WorktreeExecutor:
         logger.info("Moved task back to open/: %s", task_path.name)
         return dst
 
-    # ── LLM integration ─────────────────────────────────────────────────
+    # ── LLM / Hades integration ────────────────────────────────────────
 
     def _generate_implementation(
         self, task_content: str, worktree_path: Path
@@ -748,14 +750,19 @@ class WorktreeExecutor:
         """Call the LLM to generate code, write files, and validate.
 
         Retry loop:
-          1. Call LLM to generate code (with previous error context on retries)
-          2. Write files from the response
+          1. Call LLM/Hades to generate code (with previous error context on retries)
+          2. Write files from the response (LLM path only — Hades writes its own)
           3. Run validation  (build/test commands from project config)
-          4. If validation passes → return success
-          5. If validation fails and retries remain → feed error back to LLM
-          6. After max retries → return failed with validation error
+          4. If validation passes → run AI review
+          5. If review passes → return success
+          6. If validation or review fails and retries remain → feed error back
+          7. After max retries → return failed with last error
 
-        The LLM is asked to output code blocks with file paths in the format:
+        When self.hades_url is set, delegates to Hades' CoderAgent (Rust)
+        instead of calling the LLM directly. Hades handles exploration, planning,
+        code generation, file writing, and its own test validation internally.
+
+        The direct LLM path expects code blocks in the format:
         ```language path=relative/file/path.ext
         ...code...
         ```
@@ -776,6 +783,15 @@ class WorktreeExecutor:
             # Load vault context once per task
             vault_context = self._load_vault_context()
 
+            # ── Hades path ───────────────────────────────────────────────
+            if self.hades_url:
+                return self._generate_implementation_with_hades(
+                    task_content=task_content,
+                    worktree_path=worktree_path,
+                    cost_tracker=cost_tracker,
+                )
+
+            # ── Direct LLM path ──────────────────────────────────────────
             # Explore once
             explore_result = self._explore_project(worktree_path, vault_context, cost_tracker)
             logger.info("LLM exploration: %s", explore_result[:300])
@@ -893,12 +909,105 @@ class WorktreeExecutor:
             logger.error("Budget exceeded: %s", e)
             return {"success": False, "error": str(e), "summary": ""}
         except Exception as e:
-            logger.exception("LLM execution failed")
+            logger.exception("Implementation execution failed")
             return {"success": False, "error": str(e), "summary": ""}
         finally:
             total_cost = cost_tracker.get_total_cost() if 'cost_tracker' in dir() else 0
             if total_cost > 0:
                 logger.info("Cost summary for %s:\n%s", cost_tracker._task_id, cost_tracker.summary())
+
+    def _generate_implementation_with_hades(
+        self,
+        task_content: str,
+        worktree_path: Path,
+        cost_tracker,
+    ) -> dict:
+        """Delegate implementation to Hades' CoderAgent.
+
+        Hades handles exploration, planning, code generation, file writing,
+        and its own test validation internally (with up to 3 retries).
+        Workbench then runs its own validation (build/test) and AI review
+        as a safety net on top of what Hades produced.
+        """
+        from .hades_client import HadesClient, HadesError
+        from .cost_tracker import BudgetExceededError
+
+        try:
+            logger.info("Delegating implementation to Hades at %s", self.hades_url)
+
+            client = HadesClient(self.hades_url)
+            result = client.execute_task(
+                task=task_content,
+                worktree_path=str(worktree_path),
+            )
+
+            if not result.get("success"):
+                logger.error("Hades task execution failed: %s", result.get("summary", ""))
+                return {
+                    "success": False,
+                    "summary": result.get("summary", ""),
+                    "error": f"Hades agent failed: {result.get('summary', 'unknown error')}",
+                    "raw": "",
+                    "written_files": [],
+                }
+
+            summary = result.get("summary", "Task implementation (via Hades)")
+            actions = result.get("actions_taken", [])
+            files_count = len([a for a in actions if a.get("action_type") == "write_file"])
+            logger.info(
+                "Hades succeeded: %s (%d file mutations)",
+                summary[:100], files_count,
+            )
+
+            # Run Workbench's validation (build/test commands from project config)
+            validation = self._run_validation(worktree_path)
+            if not validation["success"]:
+                logger.warning(
+                    "Workbench validation failed after Hades success: %.200s",
+                    validation["output"],
+                )
+                return {
+                    "success": False,
+                    "summary": summary,
+                    "error": f"Validation failed after Hades implementation: {validation['output'][:500]}",
+                    "raw": "",
+                    "written_files": [a.get("target", "") for a in actions],
+                }
+
+            logger.info("Workbench validation passed for Hades-generated changes")
+
+            # Run AI review
+            review = self._run_ai_review(task_content, worktree_path, cost_tracker)
+            if not review["passed"]:
+                logger.warning(
+                    "AI review failed after Hades implementation: %.200s",
+                    review.get("issues", ""),
+                )
+                return {
+                    "success": False,
+                    "summary": summary,
+                    "error": f"AI review failed after Hades implementation: {review['issues'][:500]}",
+                    "raw": "",
+                    "written_files": [a.get("target", "") for a in actions],
+                }
+
+            logger.info("AI review passed for Hades-generated changes")
+            return {
+                "success": True,
+                "summary": summary,
+                "raw": "",
+                "error": "",
+                "written_files": [a.get("target", "") for a in actions],
+            }
+
+        except HadesError as e:
+            logger.error("Hades API error: %s", e)
+            return {"success": False, "error": str(e), "summary": ""}
+        except BudgetExceededError:
+            raise
+        except Exception as e:
+            logger.exception("Hades execution failed")
+            return {"success": False, "error": str(e), "summary": ""}
 
     def _explore_project(self, worktree_path: Path, vault_context: str,
                          cost_tracker=None) -> str:
